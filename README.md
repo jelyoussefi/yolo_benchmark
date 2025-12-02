@@ -12,38 +12,18 @@ Benchmark YOLO models using Intel OpenVINO Runtime. Runs on any Intel platform w
 
 ## Prerequisites
 
-### Docker Installation
+- Docker Installation
 
-Docker is required to build and run this project. Install Docker Engine on Ubuntu by following the official guide:
-
-**https://docs.docker.com/engine/install/ubuntu/**
+	Docker is required to build and run this project. Install Docker Engine on Ubuntu by following the official guide: **https://docs.docker.com/engine/install/ubuntu/**
 
 
-# Add your user to the docker group (optional, to run without sudo)
-sudo usermod -aG docker $USER
-```
-
-Log out and back in for group changes to take effect.
-
-## Quick Start
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd advantech_whitepaper
-   ```
-
-2. **Build and run benchmark**
-   ```bash
-   make benchmark
-   ```
-
-   This will:
-   - Build the Docker image with all dependencies
-   - Download and convert YOLO models to OpenVINO format
-   - Run the benchmark on the default model
-
+- Add your user to the docker group (optional, to run without sudo)
+	```bash
+	sudo usermod -aG docker $USER
+	```
 ## Usage
+
+### Build Docker Image
 
 ### Build Docker Image
 
