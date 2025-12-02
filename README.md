@@ -25,8 +25,6 @@ Benchmark YOLO models using Intel OpenVINO Runtime. Runs on any Intel platform w
 
 ### Build Docker Image
 
-### Build Docker Image
-
 ```bash
 make build
 ```
