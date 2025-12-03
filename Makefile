@@ -50,7 +50,7 @@ build:
 	@docker build ${DOCKER_BUILD_PARAMS}
 	
 benchmark: build
-	@$(call msg, Running the Safety Zone Monitoring ...)
+	@$(call msg, Running the Advantech White Paper Benchmarks ...)
 	@docker run ${DOCKER_RUN_PARAMS} bash -c ' \
 		python3 ./benchmark.py  \
 				--input=${INPUT}	 \
