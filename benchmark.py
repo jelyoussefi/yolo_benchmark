@@ -54,14 +54,17 @@ def print_header():
     print(f"{Colors.CYAN}{'─' * 70}{Colors.END}")
 
 
-def print_config(model_name: str, precision: str, device: str, input_path: str):
+def print_config(model_name: str, precision: str, device: str, input_path: str, device_full_name: str = None):
     """Print configuration details"""
     print(f"{Colors.CYAN}{'─' * 70}{Colors.END}")
     print(f"{Colors.BOLD}{Colors.BLUE}{'Configuration':^70}{Colors.END}")
     print(f"{Colors.CYAN}{'─' * 70}{Colors.END}")
     print(f"\t{Colors.YELLOW}Model:{Colors.END}     {model_name}")
     print(f"\t{Colors.YELLOW}Precision:{Colors.END} {precision}")
-    print(f"\t{Colors.YELLOW}Device:{Colors.END}    {device}")
+    if device_full_name:
+        print(f"\t{Colors.YELLOW}Device:{Colors.END}    {device_full_name}")
+    else:
+        print(f"\t{Colors.YELLOW}Device:{Colors.END}    {device}")
     print(f"\t{Colors.YELLOW}Input:{Colors.END}     {input_path}")
 
 
@@ -92,6 +95,48 @@ def print_warning(message: str):
 def print_info(message: str):
     """Print info message"""
     print(f"{Colors.CYAN}ℹ {message}{Colors.END}")
+
+
+def get_device_name(device: str, core: Core = None) -> str:
+    """Get the full device name"""
+    device_upper = device.upper()
+    
+    # For CPU, get from /proc/cpuinfo
+    if device_upper == "CPU":
+        try:
+            with open('/proc/cpuinfo', 'r') as f:
+                for line in f:
+                    if 'model name' in line:
+                        cpu_name = line.split(':')[1].strip()
+                        return f"CPU ( {cpu_name} )"
+        except:
+            pass
+    
+    # For GPU/NPU, try to get from OpenVINO Core
+    if core is not None:
+        try:
+            available_devices = core.available_devices
+            for dev in available_devices:
+                if device_upper in dev.upper() or dev.upper() in device_upper:
+                    device_name = core.get_property(dev, "FULL_DEVICE_NAME")
+                    return f"{device_upper} ( {device_name} )"
+        except:
+            pass
+    
+    # Fallback: try lspci for GPU/NPU
+    if device_upper == "GPU":
+        try:
+            import subprocess
+            result = subprocess.run(['lspci'], capture_output=True, text=True)
+            for line in result.stdout.split('\n'):
+                if 'VGA' in line or 'Display' in line or '3D' in line:
+                    if 'Intel' in line:
+                        gpu_name = line.split(': ')[-1].strip()
+                        return f"GPU ( {gpu_name} )"
+        except:
+            pass
+    
+    return device_upper
 
 
 class YoloBenchmark:
@@ -607,9 +652,6 @@ def main():
         print_error(f"Input image not found: {input_path}")
         sys.exit(1)
     
-    # Print configuration
-    print_config(args.model, args.precision, args.device, str(input_path))
-    
     # Load image
     image = cv2.imread(str(input_path))
     if image is None:
@@ -617,6 +659,13 @@ def main():
         sys.exit(1)
     
     try:
+        # Initialize OpenVINO Core for device detection
+        core = Core()
+        device_full_name = get_device_name(args.device, core)
+        
+        # Print configuration with full device name
+        print_config(args.model, args.precision, args.device, str(input_path), device_full_name)
+        
         # Initialize benchmark
         benchmark = YoloBenchmark(
             model_path=str(model_path),
